@@ -11,6 +11,8 @@ const LazyMailModule = lazy(() => import('@/mail'));
 const LazyCalendarModule = lazy(() => import('@/calendar'));
 const LazyAIModule = lazy(() => import('@/ai'));
 const LazyTodoModule = lazy(() => import('@/todo'));
+const LazySettingsModule = lazy(() => import('@/settings'));
+const LazyAccountModule = lazy(() => import('@/account'));
 
 export function ModulesProvider() {
   const location = useLocation();
@@ -81,6 +83,22 @@ export function ModulesProvider() {
           element={
             <Suspense fallback={<ScreenLoader />}>
               <LazyTodoModule />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <Suspense fallback={<ScreenLoader />}>
+              <LazySettingsModule />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/account"
+          element={
+            <Suspense fallback={<ScreenLoader />}>
+              <LazyAccountModule />
             </Suspense>
           }
         />

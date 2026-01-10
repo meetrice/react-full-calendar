@@ -4,6 +4,12 @@ export type UUID = string;
 // Language code type for user preferences
 export type LanguageCode = 'en' | 'de' | 'es' | 'fr' | 'ja' | 'zh';
 
+// Week start day for calendar
+export type WeekStartDay = 'sunday' | 'monday';
+
+// Notification method preference
+export type NotificationMethod = 'browser' | 'api' | 'none';
+
 // Auth model representing the authentication session
 export interface AuthModel {
   access_token: string;
@@ -28,4 +34,6 @@ export interface UserModel {
   pic?: string;
   language?: LanguageCode;
   is_admin?: boolean; // Added admin flag
+  week_start?: WeekStartDay; // Week start day preference
+  notification_method?: NotificationMethod; // Notification method preference
 }

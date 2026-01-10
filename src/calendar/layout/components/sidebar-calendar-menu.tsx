@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Clock, CheckSquare, Bell, Users, Settings } from 'lucide-react';
+import { Calendar, Clock, CheckSquare, Bell, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MenuItem {
@@ -48,12 +48,6 @@ export function SidebarCalendarMenu() {
       icon: <Clock className="w-4 h-4" />,
       color: 'text-orange-400'
     },
-    {
-      id: 'settings',
-      label: 'Settings',
-      icon: <Settings className="w-4 h-4" />,
-      color: 'text-gray-400'
-    }
   ];
 
   const handleItemClick = (id: string) => {
@@ -82,8 +76,8 @@ export function SidebarCalendarMenu() {
             <div className="flex items-center gap-3">
               <div className={cn(
                 'flex items-center justify-center size-7 rounded-md',
-                activeItem === item.id 
-                  ? 'bg-white/10' 
+                activeItem === item.id
+                  ? 'bg-white/10'
                   : 'bg-white/5'
               )}>
                 <span className={item.color}>

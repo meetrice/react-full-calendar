@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ChevronsUpDown, User, Users, Sparkles, LogOut, Sun, Moon } from "lucide-react";
+import { ChevronsUpDown, Users, Settings, LogOut, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/auth";
 import { getInitials } from "@/lib/helpers";
@@ -25,6 +25,14 @@ export function SidebarFooter() {
   const handleLogout = () => {
     logout();
     navigate("/auth/signin");
+  };
+
+  const handleAccountClick = () => {
+    navigate("/account");
+  };
+
+  const handleSettingsClick = () => {
+    navigate("/settings");
   };
 
   // Get user display name
@@ -57,22 +65,18 @@ export function SidebarFooter() {
           side="top"
           className="w-57 rounded-xl p-1"
         >
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4 opacity-80" />
-            Profile
-          </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={handleAccountClick}>
             <Users className="mr-2 h-4 w-4 opacity-80" />
-            Accounts
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Sparkles className="mr-2 h-4 w-4 opacity-80" />
-            Upgrade
+            Account
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={toggleTheme}>
             {theme === "light" ? <Moon className="mr-2 h-4 w-4" /> : <Sun className="mr-2 h-4 w-4" />}
             {theme === "light" ? "Dark mode" : "Light mode"}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleSettingsClick}>
+            <Settings className="mr-2 h-4 w-4 opacity-80" />
+            Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>
