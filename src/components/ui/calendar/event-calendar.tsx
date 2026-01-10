@@ -7,12 +7,14 @@ import {
   addHours,
   addMonths,
   addWeeks,
+  addYears,
   endOfWeek,
   format,
   isSameMonth,
   startOfWeek,
   subMonths,
   subWeeks,
+  subYears,
 } from "date-fns"
 import {
   ChevronDownIcon,
@@ -39,6 +41,7 @@ import { DayView } from "./day-view"
 import { EventDialog } from "./event-dialog"
 import { MonthView } from "./month-view"
 import { WeekView } from "./week-view"
+import { YearView } from "./year-view"
 import { ToolbarSidebarToggle } from "@/calendar/layout/components/toolbar"
 
 export interface EventCalendarProps {
@@ -90,6 +93,9 @@ export function EventCalendar({
         case "a":
           setView("agenda")
           break
+        case "y":
+          setView("year")
+          break
       }
     }
 
@@ -110,6 +116,8 @@ export function EventCalendar({
     } else if (view === "agenda") {
       // For agenda view, go back 30 days (a full month)
       setCurrentDate(addDays(currentDate, -AgendaDaysToShow))
+    } else if (view === "year") {
+      setCurrentDate(subYears(currentDate, 1))
     }
   }
 
@@ -123,6 +131,8 @@ export function EventCalendar({
     } else if (view === "agenda") {
       // For agenda view, go forward 30 days (a full month)
       setCurrentDate(addDays(currentDate, AgendaDaysToShow))
+    } else if (view === "year") {
+      setCurrentDate(addYears(currentDate, 1))
     }
   }
 
@@ -245,6 +255,8 @@ export function EventCalendar({
       } else {
         return `${format(start, "MMM")} - ${format(end, "MMM yyyy")}`
       }
+    } else if (view === "year") {
+      return format(currentDate, "yyyy")
     } else {
       return format(currentDate, "MMMM yyyy")
     }
@@ -336,6 +348,9 @@ export function EventCalendar({
                 <DropdownMenuItem onClick={() => setView("agenda")}>
                   Agenda <DropdownMenuShortcut>A</DropdownMenuShortcut>
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setView("year")}>
+                  Year <DropdownMenuShortcut>Y</DropdownMenuShortcut>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button
@@ -396,6 +411,13 @@ export function EventCalendar({
           )}
           {view === "agenda" && (
             <AgendaView
+              currentDate={currentDate}
+              events={events}
+              onEventSelect={handleEventSelect}
+            />
+          )}
+          {view === "year" && (
+            <YearView
               currentDate={currentDate}
               events={events}
               onEventSelect={handleEventSelect}
