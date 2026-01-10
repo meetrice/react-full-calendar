@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { addDays, setHours, setMinutes, subDays } from "date-fns"
 import { EventCalendar } from "@/components/ui/calendar/event-calendar"
 import { type CalendarEvent } from "@/components/ui/calendar/types"
+import { useCalendarEvents } from "@/hooks/use-calendar-events"
+import { useAuth } from "@/auth/context/auth-context"
 
-// Sample events data with hardcoded times
+// Sample events data with hardcoded times (fallback when no Supabase or no events)
 const sampleEvents: CalendarEvent[] = [
   {
     id: "1",
@@ -130,30 +132,70 @@ const sampleEvents: CalendarEvent[] = [
 ]
 
 export function CalendarPage() {
-  const [events, setEvents] = useState<CalendarEvent[]>(sampleEvents)
+  const { user } = useAuth()
+  const [localEvents, setLocalEvents] = useState<CalendarEvent[]>([])
+  const [useSupabase, setUseSupabase] = useState(false)
 
-  const handleEventAdd = (event: CalendarEvent) => {
-    setEvents([...events, event])
+  // Try to use Supabase if user is authenticated
+  const {
+    events: supabaseEvents,
+    error,
+    handleEventAdd,
+    handleEventUpdate,
+    handleEventDelete,
+  } = useCalendarEvents()
+
+  // Determine whether to use Supabase or local state
+  useEffect(() => {
+    const hasValidSupabaseConfig =
+      import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
+
+    if (user?.id && hasValidSupabaseConfig && !error) {
+      setUseSupabase(true)
+    } else {
+      setUseSupabase(false)
+      // Use sample events when not using Supabase
+      setLocalEvents(sampleEvents)
+    }
+  }, [user?.id, error])
+
+  // Current events based on mode
+  const events = useSupabase ? supabaseEvents : localEvents
+
+  const handleEventAddWrapper = async (event: CalendarEvent) => {
+    if (useSupabase) {
+      await handleEventAdd(event)
+    } else {
+      setLocalEvents([...localEvents, event])
+    }
   }
 
-  const handleEventUpdate = (updatedEvent: CalendarEvent) => {
-    setEvents(
-      events.map((event) =>
-        event.id === updatedEvent.id ? updatedEvent : event
+  const handleEventUpdateWrapper = async (updatedEvent: CalendarEvent) => {
+    if (useSupabase) {
+      await handleEventUpdate(updatedEvent)
+    } else {
+      setLocalEvents(
+        localEvents.map((event) =>
+          event.id === updatedEvent.id ? updatedEvent : event
+        )
       )
-    )
+    }
   }
 
-  const handleEventDelete = (eventId: string) => {
-    setEvents(events.filter((event) => event.id !== eventId))
+  const handleEventDeleteWrapper = async (eventId: string) => {
+    if (useSupabase) {
+      await handleEventDelete(eventId)
+    } else {
+      setLocalEvents(localEvents.filter((event) => event.id !== eventId))
+    }
   }
 
   return (
     <EventCalendar
       events={events}
-      onEventAdd={handleEventAdd}
-      onEventUpdate={handleEventUpdate}
-      onEventDelete={handleEventDelete}
+      onEventAdd={handleEventAddWrapper}
+      onEventUpdate={handleEventUpdateWrapper}
+      onEventDelete={handleEventDeleteWrapper}
     />
   )
 }
