@@ -1,0 +1,27 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="100" fill="url(#grad)"/>
+  <rect x="80" y="100" width="352" height="312" rx="20" fill="white" fill-opacity="0.15"/>
+  <rect x="100" y="140" width="312" height="40" rx="8" fill="white" fill-opacity="0.3"/>
+  <rect x="100" y="200" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="160" y="200" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="220" y="200" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="280" y="200" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="340" y="200" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="100" y="260" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="160" y="260" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="220" y="260" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="280" y="260" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="340" y="260" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="100" y="320" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="160" y="320" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="220" y="320" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="280" y="320" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <rect x="340" y="320" width="44" height="44" rx="8" fill="white" fill-opacity="0.25"/>
+  <ellipse cx="380" cy="400" rx="30" ry="18" fill="white" fill-opacity="0.4" transform="rotate(-30 380 400)"/>
+</svg>

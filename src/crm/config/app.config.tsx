@@ -1,6 +1,7 @@
 import {
   BriefcaseBusiness,
   Building2,
+  Calendar,
   CheckSquare,
   CircleEllipsis,
   GalleryVerticalEnd,
@@ -16,6 +17,12 @@ export const MAIN_NAV: NavConfig = [
     icon: Home,
     path: '/crm/dashboard',
     id: 'dashboard',
+  },
+  {
+    icon: Calendar,
+    title: 'Calendar',
+    path: '/calendar',
+    id: 'calendar',
   },
   {
     icon: CheckSquare,
