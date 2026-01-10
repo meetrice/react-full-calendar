@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <!-- Background circle with gradient -->
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16a34a;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="calendarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#86efac;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4ade80;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Calendar base -->
+  <rect x="6" y="8" width="28" height="26" rx="4" fill="url(#logoGradient)" />
+
+  <!-- Calendar header -->
+  <rect x="6" y="8" width="28" height="8" rx="4" fill="rgba(255,255,255,0.2)" />
+  <rect x="6" y="14" width="28" height="2" fill="rgba(255,255,255,0.2)" />
+
+  <!-- Calendar rings (top) -->
+  <circle cx="13" cy="5" r="2.5" fill="#16a34a" />
+  <circle cx="27" cy="5" r="2.5" fill="#16a34a" />
+
+  <!-- Rice grain (calendar center mark) -->
+  <ellipse cx="20" cy="22" rx="6" ry="8" fill="url(#calendarGradient)" opacity="0.8" />
+  <ellipse cx="20" cy="22" rx="3" ry="5" fill="#22c55e" />
+
+  <!-- Calendar grid lines (subtle) -->
+  <line x1="14" y1="18" x2="14" y2="26" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" />
+  <line x1="20" y1="18" x2="20" y2="26" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" />
+  <line x1="26" y1="18" x2="26" y2="26" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" />
+
+  <!-- Date highlight -->
+  <circle cx="20" cy="22" r="3" fill="#fff" opacity="0.3" />
+</svg>

@@ -26,9 +26,9 @@ export function HeaderBrand() {
   return (
     <div className="flex items-center -ms-1">
       <img
-        src={toAbsoluteUrl('/media/app/mini-logo.svg')}
-        alt=""
-        className="h-4"
+        src={toAbsoluteUrl('/media/app/logo-ricecal-mini.svg')}
+        alt="RiceCal"
+        className="h-5"
       />
       {isMobile && (
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>

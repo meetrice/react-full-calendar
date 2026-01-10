@@ -15,17 +15,17 @@ export function SidebarHeader() {
           <Link to="/calendar/page" className="flex items-center gap-2">
             <div
               className="
-                flex items-center p-[5px]
-                rounded-[6px] border border-white/30
-                bg-[#000]
-                bg-[radial-gradient(97.49%_97.49%_at_50%_2.51%,rgba(255,255,255,0.5)_0%,rgba(255,255,255,0)_100%)]
-                shadow-[0_0_0_1px_#000]
+                flex items-center justify-center
+                w-9 h-9 min-w-[36px]
+                rounded-lg
+                bg-gradient-to-br from-emerald-500 to-emerald-600
+                shadow-lg shadow-emerald-500/20
               "
             >
-              <img src={toAbsoluteUrl('/media/app/logo-35.svg')} alt="image" className="min-w-[18px]" />
+              <img src={toAbsoluteUrl('/media/app/logo-ricecal-mini.svg')} alt="RiceCal" className="w-5 h-5" />
             </div>
-            <span className="text-white text-lg font-semibold hidden lg:block">
-              Metronic
+            <span className="text-white text-lg font-semibold hidden lg:block tracking-tight">
+              RiceCal
             </span>
           </Link>
 
@@ -38,7 +38,8 @@ export function SidebarHeader() {
           >
             <PanelLeft className="size-5 opacity-100" />
           </Button>
-        </div>        
+        </div>
+
       </div>
     </div>
   );
