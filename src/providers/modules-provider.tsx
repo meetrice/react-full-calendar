@@ -1,6 +1,9 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ScreenLoader } from '@/components/screen-loader';
+import { RequireAuth } from '@/auth/require-auth';
+import { AuthLayout } from '@/auth/layouts/auth-layout';
+import { SignInPage } from '@/auth/pages/signin-page';
 
 const LazyCrmModule = lazy(() => import('@/crm'));
 const LazyStoreInventoryModule = lazy(() => import('@/store-inventory'));
@@ -13,17 +16,26 @@ export function ModulesProvider() {
   const location = useLocation();
   const path = location.pathname;
 
-  // Detect if current path is for CRM or Store
-  const isCrm = path.startsWith('/crm');
-  const isMail = path.startsWith('/mail');
-  const isStoreInventory = path.startsWith('/store-inventory');
-  const isCalendar = path.startsWith('/calendar');
-  const isAI = path.startsWith('/ai');
-  const isTodo = path.startsWith('/todo');
+  // Auth routes
+  const isAuth = path.startsWith('/auth');
 
-  if (isCrm) {
+  if (isAuth) {
     return (
       <Routes>
+        <Route path="/auth" element={<AuthLayout />}>
+          <Route path="signin" element={<SignInPage />} />
+          <Route path="signup" element={<div>Sign Up Page (Coming Soon)</div>} />
+          <Route path="reset-password" element={<div>Reset Password Page (Coming Soon)</div>} />
+          <Route index element={<Navigate to="/auth/signin" replace />} />
+        </Route>
+      </Routes>
+    );
+  }
+
+  // Protected routes
+  return (
+    <Routes>
+      <Route element={<RequireAuth />}>
         <Route
           path="/crm/*"
           element={
@@ -32,11 +44,6 @@ export function ModulesProvider() {
             </Suspense>
           }
         />
-      </Routes>
-    );
-  } else if (isStoreInventory) {
-    return (
-      <Routes>
         <Route
           path="/store-inventory/*"
           element={
@@ -45,21 +52,14 @@ export function ModulesProvider() {
             </Suspense>
           }
         />
-      </Routes>
-    );
-  } else if (isMail) {
-    return (
-      <Routes>
-        <Route path="/mail/*" element={ 
-          <Suspense fallback={<ScreenLoader />}> 
-            <LazyMailModule /> 
-          </Suspense> 
-        } />
-      </Routes>
-    );
-  } else if (isCalendar) {
-    return (
-      <Routes>
+        <Route
+          path="/mail/*"
+          element={
+            <Suspense fallback={<ScreenLoader />}>
+              <LazyMailModule />
+            </Suspense>
+          }
+        />
         <Route
           path="/calendar/*"
           element={
@@ -68,11 +68,6 @@ export function ModulesProvider() {
             </Suspense>
           }
         />
-      </Routes>
-    );
-  } else if (isAI) {
-    return (
-      <Routes>
         <Route
           path="/ai/*"
           element={
@@ -81,11 +76,6 @@ export function ModulesProvider() {
             </Suspense>
           }
         />
-      </Routes>
-    );
-  } else if (isTodo) {
-    return (
-      <Routes>
         <Route
           path="/todo/*"
           element={
@@ -94,10 +84,8 @@ export function ModulesProvider() {
             </Suspense>
           }
         />
-      </Routes>
-    );
-  }
-
-  // Redirect to CRM if no route matches
-  return <Navigate to="/crm" replace />;
+        <Route path="/" element={<Navigate to="/crm" replace />} />
+      </Route>
+    </Routes>
+  );
 }

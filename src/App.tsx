@@ -3,6 +3,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter } from 'react-router-dom';
 import { LoadingBarContainer } from 'react-top-loading-bar';
 import { Toaster } from '@/components/ui/sonner';
+import { AuthProvider } from '@/auth';
 import { ModulesProvider } from './providers/modules-provider';
 
 const { BASE_URL } = import.meta.env;
@@ -20,8 +21,10 @@ export function App() {
       <HelmetProvider>
         <LoadingBarContainer>
           <BrowserRouter basename={BASE_URL}>
-            <Toaster />
-            <ModulesProvider />
+            <AuthProvider>
+              <Toaster />
+              <ModulesProvider />
+            </AuthProvider>
           </BrowserRouter>
         </LoadingBarContainer>
       </HelmetProvider>
