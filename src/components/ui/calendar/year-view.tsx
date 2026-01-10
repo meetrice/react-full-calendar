@@ -12,15 +12,17 @@ import {
   startOfMonth,
 } from "date-fns"
 import type { CalendarEvent } from "./types"
+import { DefaultStartHour } from "./constants"
 import { getEventsForDay } from "./utils"
 
 interface YearViewProps {
   currentDate: Date
   events: CalendarEvent[]
   onEventSelect: (event: CalendarEvent) => void
+  onEventCreate: (startTime: Date) => void
 }
 
-export function YearView({ currentDate, events, onEventSelect }: YearViewProps) {
+export function YearView({ currentDate, events, onEventSelect, onEventCreate }: YearViewProps) {
   const year = currentDate.getFullYear()
 
   // Get all months for the current year
@@ -62,12 +64,14 @@ export function YearView({ currentDate, events, onEventSelect }: YearViewProps) 
     onEventSelect(event)
   }
 
-  // Check if a month has any events
-  const monthHasEvents = (monthDate: Date) => {
-    return events.some((event) => {
-      const eventDate = new Date(event.start)
-      return eventDate.getFullYear() === year && eventDate.getMonth() === monthDate.getMonth()
-    })
+  const handleDateClick = (day: Date, e: React.MouseEvent) => {
+    // Don't create event if clicking on an event indicator dot
+    if ((e.target as HTMLElement).closest('[data-event-indicator]')) {
+      return
+    }
+    const startTime = new Date(day)
+    startTime.setHours(DefaultStartHour, 0, 0)
+    onEventCreate(startTime)
   }
 
   return (
@@ -75,7 +79,6 @@ export function YearView({ currentDate, events, onEventSelect }: YearViewProps) 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {months.map((month, monthIndex) => {
           const monthGrid = generateMonthGrid(month)
-          const hasEvents = monthHasEvents(month)
 
           return (
             <div
@@ -121,23 +124,20 @@ export function YearView({ currentDate, events, onEventSelect }: YearViewProps) 
                       >
                         <div
                           className={`
-                            flex h-full w-full items-center justify-center rounded text-xs
+                            flex h-full w-full cursor-pointer items-center justify-center rounded text-xs transition-colors
                             ${dayIsToday
                               ? "bg-primary text-primary-foreground font-semibold"
-                              : hasEvents && dayEvents.length > 0
-                                ? "bg-muted/50 hover:bg-muted cursor-pointer"
-                                : isCurrentMonth
-                                  ? "text-foreground"
-                                  : "text-muted-foreground/50"
+                              : "hover:bg-muted/50"
                             }
                           `}
+                          onClick={(e) => handleDateClick(day, e)}
                         >
                           {format(day, "d")}
                         </div>
 
                         {/* Event indicator dots */}
                         {dayEvents.length > 0 && (
-                          <div className="absolute bottom-0.5 left-1/2 flex -translate-x-1/2 gap-0.5">
+                          <div className="absolute bottom-0.5 left-1/2 flex -translate-x-1/2 gap-0.5" data-event-indicator>
                             {dayEvents.slice(0, 3).map((event, i) => (
                               <div
                                 key={i}
@@ -146,6 +146,10 @@ export function YearView({ currentDate, events, onEventSelect }: YearViewProps) 
                                   color: `hsl(var(--${event.color || "sky"}))`,
                                 }}
                                 title={event.title}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleEventClick(event, e)
+                                }}
                               />
                             ))}
                             {dayEvents.length > 3 && (

@@ -421,6 +421,7 @@ export function EventCalendar({
               currentDate={currentDate}
               events={events}
               onEventSelect={handleEventSelect}
+              onEventCreate={handleEventCreate}
             />
           )}
         </div>
