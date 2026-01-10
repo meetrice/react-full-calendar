@@ -1,92 +1,47 @@
 import { AuthModel, UserModel } from '@/auth/lib/models';
 import { getAuth, setAuth, removeAuth } from '@/auth/lib/helpers';
+import { supabase } from '@/lib/supabase';
+import { updateUserProfile as updateProfileInSupabase } from '@/lib/user-repository';
 
-// Demo users storage key
-const DEMO_USERS_KEY = 'demo-users';
-
-// Get demo users from localStorage
-const getDemoUsers = (): UserModel[] => {
-  try {
-    const users = localStorage.getItem(DEMO_USERS_KEY);
-    return users ? JSON.parse(users) : [];
-  } catch {
-    return [];
-  }
-};
-
-// Save demo users to localStorage
-const saveDemoUsers = (users: UserModel[]) => {
-  try {
-    localStorage.setItem(DEMO_USERS_KEY, JSON.stringify(users));
-  } catch (error) {
-    console.error('Error saving demo users:', error);
-  }
-};
-
-// Initialize demo users if not exists
-const initializeDemoUsers = () => {
-  const users = getDemoUsers();
-  if (users.length === 0) {
-    const demoUsers: UserModel[] = [
-      {
-        id: '1',
-        username: 'demo',
-        email: 'demo@kt.com',
-        password: 'demo123', // In production, this should be hashed
-        first_name: 'Demo',
-        last_name: 'User',
-        fullname: 'Demo User',
-        email_verified: true,
-        is_admin: true,
-      },
-    ];
-    saveDemoUsers(demoUsers);
-  }
-};
-
-// Ensure demo users exist
-initializeDemoUsers();
+// Storage key for current user
+const CURRENT_USER_KEY = 'current-user';
 
 /**
- * Local Auth Adapter for demo purposes.
- * In production, replace this with a real backend API call.
+ * Supabase Auth Adapter
+ * Uses Supabase Auth for authentication and stores user data in auth.users metadata
  */
 export const AuthAdapter = {
   /**
-   * Login with email and password
+   * Login with email and password using Supabase Auth
    */
   async login(email: string, password: string): Promise<AuthModel> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    const users = getDemoUsers();
-    const user = users.find(
-      (u) => u.email === email && u.password === password,
-    );
-
-    if (!user) {
-      throw new Error('Invalid email or password');
+    if (error || !data.session) {
+      throw new Error(error?.message || 'Login failed');
     }
 
-    // Generate a fake token
-    const token = btoa(`${user.email}:${Date.now()}`);
-
+    // Store auth tokens
     const authModel: AuthModel = {
-      access_token: token,
-      refresh_token: token, // Using same token for demo
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
     };
-
-    // Store auth
     setAuth(authModel);
 
-    // Store user data
-    localStorage.setItem('current-user', JSON.stringify(user));
+    // Store user data from metadata
+    if (data.user) {
+      const userData = this.convertAuthUserToModel(data.user);
+      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userData));
+    }
 
     return authModel;
   },
 
   /**
-   * Register a new user
+   * Register a new user using Supabase Auth
    */
   async register(
     email: string,
@@ -95,51 +50,48 @@ export const AuthAdapter = {
     firstName?: string,
     lastName?: string,
   ): Promise<AuthModel> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
     if (password !== password_confirmation) {
       throw new Error('Passwords do not match');
     }
 
-    const users = getDemoUsers();
-    const existingUser = users.find((u) => u.email === email);
-
-    if (existingUser) {
-      throw new Error('User with this email already exists');
-    }
-
-    const newUser: UserModel = {
-      id: String(Date.now()),
+    const metadata: Record<string, unknown> = {
       username: email.split('@')[0],
-      email,
-      password, // In production, this should be hashed
       first_name: firstName || '',
       last_name: lastName || '',
       fullname: firstName && lastName ? `${firstName} ${lastName}`.trim() : '',
-      email_verified: true,
-      is_admin: false,
     };
 
-    users.push(newUser);
-    saveDemoUsers(users);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: metadata,
+      },
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
 
     // Auto login after registration
     return this.login(email, password);
   },
 
   /**
-   * Request password reset (demo - just shows a message)
+   * Request password reset
    */
   async requestPasswordReset(email: string): Promise<void> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    // In production, this would send an email
-    console.log('Password reset requested for:', email);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
   },
 
   /**
-   * Reset password with token (demo)
+   * Reset password with new password
    */
   async resetPassword(
     password: string,
@@ -148,53 +100,65 @@ export const AuthAdapter = {
     if (password !== password_confirmation) {
       throw new Error('Passwords do not match');
     }
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const { error } = await supabase.auth.updateUser({
+      password,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
   },
 
   /**
-   * Resend verification email (demo)
+   * Resend verification email
    */
   async resendVerificationEmail(email: string): Promise<void> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Supabase handles email verification automatically
+    // This is a placeholder for any custom verification logic
     console.log('Verification email resent to:', email);
   },
 
   /**
-   * Get current user from storage
+   * Get current user from storage or Supabase
    */
   async getCurrentUser(): Promise<UserModel | null> {
     try {
-      const userStr = localStorage.getItem('current-user');
+      // First try to get from localStorage
+      const userStr = localStorage.getItem(CURRENT_USER_KEY);
       if (userStr) {
         return JSON.parse(userStr) as UserModel;
       }
+
+      // If not in storage, try to get from Supabase session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const userData = this.convertAuthUserToModel(session.user);
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userData));
+        return userData;
+      }
+
+      return null;
     } catch (error) {
       console.error('Error getting current user:', error);
+      return null;
     }
-    return null;
   },
 
   /**
-   * Update user profile
+   * Update user profile - saves to Supabase Auth metadata
    */
   async updateUserProfile(userData: Partial<UserModel>): Promise<UserModel> {
     const currentUser = await this.getCurrentUser();
-    if (!currentUser) {
+    if (!currentUser?.id) {
       throw new Error('No user logged in');
     }
 
-    const updatedUser = { ...currentUser, ...userData };
-    localStorage.setItem('current-user', JSON.stringify(updatedUser));
+    // Update using Supabase Auth Admin API (via user-repository)
+    const updatedUser = await updateProfileInSupabase(currentUser.id, userData);
 
-    // Also update in users array
-    const users = getDemoUsers();
-    const index = users.findIndex((u) => u.id === currentUser.id);
-    if (index !== -1) {
-      users[index] = updatedUser;
-      saveDemoUsers(users);
-    }
+    // Update localStorage
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
 
     return updatedUser;
   },
@@ -203,8 +167,9 @@ export const AuthAdapter = {
    * Logout the current user
    */
   async logout(): Promise<void> {
+    await supabase.auth.signOut();
     removeAuth();
-    localStorage.removeItem('current-user');
+    localStorage.removeItem(CURRENT_USER_KEY);
   },
 
   /**
@@ -216,12 +181,39 @@ export const AuthAdapter = {
       return null;
     }
 
-    // Check if token is still valid (in demo, we just check if it exists)
-    const userStr = localStorage.getItem('current-user');
-    if (userStr) {
-      return JSON.parse(userStr) as UserModel;
+    // Check Supabase session
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const userData = this.convertAuthUserToModel(session.user);
+      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userData));
+      return userData;
     }
 
     return null;
+  },
+
+  /**
+   * Convert Supabase Auth user to UserModel
+   */
+  convertAuthUserToModel(authUser: { id: string; email?: string | null; user_metadata?: Record<string, unknown>; email_confirmed_at?: string | null }): UserModel {
+    const metadata = authUser.user_metadata || {};
+
+    return {
+      id: authUser.id,
+      email: authUser.email || '',
+      username: (metadata.username as string) || '',
+      first_name: (metadata.first_name as string) || '',
+      last_name: (metadata.last_name as string) || '',
+      fullname: (metadata.fullname as string) || undefined,
+      phone: (metadata.phone as string) || undefined,
+      occupation: (metadata.occupation as string) || undefined,
+      company_name: (metadata.company_name as string) || undefined,
+      pic: (metadata.pic as string) || undefined,
+      language: (metadata.language as 'en' | 'zh' | 'de' | 'es' | 'fr' | 'ja') || 'en',
+      week_start: (metadata.week_start as 'sunday' | 'monday') || undefined,
+      notification_method: (metadata.notification_method as 'browser' | 'api' | 'none') || undefined,
+      email_verified: authUser.email_confirmed_at !== null,
+      is_admin: (metadata.is_admin as boolean) || false,
+    };
   },
 };
