@@ -39,13 +39,19 @@ export function YearView({ currentDate, events, onEventSelect, onEventCreate, we
     return eachMonthOfInterval({ start: yearStart, end: yearEnd })
   }, [year])
 
-  // Get weekdays for header
+  // Get weekdays for header - single character for year view
   const weekdays = useMemo(() => {
     return Array.from({ length: 7 }).map((_, i) => {
       const date = addDays(startOfWeek(new Date(), { weekStartsOn } as { weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 }), i)
-      return format(date, "EEE", { locale: dateFnLocale })
+      const formatted = format(date, "EEE", { locale: dateFnLocale })
+      // For Chinese, return the second character (一, 二, 三, etc.)
+      // For English, return the first 2-3 characters or first char
+      if (lang === 'zh') {
+        return formatted.charAt(1) // "周一" -> "一"
+      }
+      return formatted.substring(0, 2) // "Mon" -> "Mo"
     })
-  }, [dateFnLocale, weekStartsOn])
+  }, [dateFnLocale, weekStartsOn, lang])
 
   // Generate calendar grid for a month
   const generateMonthGrid = (monthDate: Date) => {
@@ -116,7 +122,7 @@ export function YearView({ currentDate, events, onEventSelect, onEventCreate, we
                       key={day}
                       className="text-muted-foreground/70 py-1 text-center text-[10px]"
                     >
-                      {day.charAt(0)}
+                      {day}
                     </div>
                   ))}
                 </div>
