@@ -112,8 +112,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
     await AuthAdapter.resendVerificationEmail(email);
   };
 
-  const getUser = async () => {
-    return await AuthAdapter.getCurrentUser();
+  const getUser = async (forceRefresh: boolean = false) => {
+    return await AuthAdapter.getCurrentUser(forceRefresh);
   };
 
   const updateProfile = async (userData: Partial<UserModel>) => {

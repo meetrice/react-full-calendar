@@ -2,10 +2,12 @@
 
 import { useEffect, useMemo, useRef } from "react"
 import { format, isSameDay } from "date-fns"
+import { zhCN, enUS } from "date-fns/locale"
 import { XIcon } from "lucide-react"
 
 import type { CalendarEvent } from "./types"
 import { EventItem } from "./event-item"
+import { useT } from "@/i18n"
 
 interface EventsPopupProps {
   date: Date
@@ -22,6 +24,8 @@ export function EventsPopup({
   onClose,
   onEventSelect,
 }: EventsPopupProps) {
+  const { lang } = useT()
+  const dateFnLocale = lang === 'zh' ? zhCN : enUS
   const popupRef = useRef<HTMLDivElement>(null)
 
   // Handle click outside to close popup
@@ -94,7 +98,7 @@ export function EventsPopup({
       }}
     >
       <div className="bg-background sticky top-0 flex items-center justify-between border-b p-3">
-        <h3 className="font-medium">{format(date, "d MMMM yyyy")}</h3>
+        <h3 className="font-medium">{format(date, "d MMMM yyyy", { locale: dateFnLocale })}</h3>
         <button
           onClick={onClose}
           className="hover:bg-muted rounded-full p-1"

@@ -121,10 +121,22 @@ export const AuthAdapter = {
 
   /**
    * Get current user from storage or Supabase
+   * @param forceRefresh - Force refresh from Supabase instead of using localStorage
    */
-  async getCurrentUser(): Promise<UserModel | null> {
+  async getCurrentUser(forceRefresh: boolean = false): Promise<UserModel | null> {
     try {
-      // First try to get from localStorage
+      // If force refresh, always get from Supabase
+      if (forceRefresh) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const userData = this.convertAuthUserToModel(session.user);
+          localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userData));
+          return userData;
+        }
+        return null;
+      }
+
+      // Try to get from localStorage first
       const userStr = localStorage.getItem(CURRENT_USER_KEY);
       if (userStr) {
         return JSON.parse(userStr) as UserModel;
@@ -159,6 +171,9 @@ export const AuthAdapter = {
 
     // Update localStorage
     localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
+
+    // Refresh the Supabase session to get updated metadata
+    await supabase.auth.refreshSession();
 
     return updatedUser;
   },

@@ -11,11 +11,13 @@ import { Button } from "@/components/ui/button";
 import { ChevronsUpDown, Users, Settings, LogOut, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/auth";
+import { useT } from "@/i18n";
 import { getInitials } from "@/lib/helpers";
 
 export function SidebarFooter() {
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuth();
+  const { t } = useT();
   const navigate = useNavigate();
 
   const toggleTheme = () => {
@@ -67,21 +69,21 @@ export function SidebarFooter() {
         >
           <DropdownMenuItem onClick={handleAccountClick}>
             <Users className="mr-2 h-4 w-4 opacity-80" />
-            Account
+            {t('common.account')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={toggleTheme}>
             {theme === "light" ? <Moon className="mr-2 h-4 w-4" /> : <Sun className="mr-2 h-4 w-4" />}
-            {theme === "light" ? "Dark mode" : "Light mode"}
+            {theme === "light" ? t('common.darkMode') : t('common.lightMode')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleSettingsClick}>
             <Settings className="mr-2 h-4 w-4 opacity-80" />
-            Settings
+            {t('common.settings')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4 opacity-80" />
-            Logout
+            {t('common.logout')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

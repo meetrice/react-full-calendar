@@ -3,11 +3,13 @@
 import { useMemo } from "react"
 import { RiCalendarEventLine } from "@remixicon/react"
 import { addDays, format, isToday } from "date-fns"
+import { zhCN, enUS } from "date-fns/locale"
 
 import { AgendaDaysToShow } from "./constants"
 import type { CalendarEvent } from "./types"
 import { getAgendaEventsForDay } from "./utils"
 import { EventItem } from "./event-item"
+import { useT } from "@/i18n"
 
 interface AgendaViewProps {
   currentDate: Date
@@ -20,6 +22,8 @@ export function AgendaView({
   events,
   onEventSelect,
 }: AgendaViewProps) {
+  const { lang } = useT()
+  const dateFnLocale = lang === 'zh' ? zhCN : enUS
   // Show events for the next days based on constant
   const days = useMemo(() => {
     console.log("Agenda view updating with date:", currentDate.toISOString())
@@ -67,7 +71,7 @@ export function AgendaView({
                 className="bg-background absolute -top-3 left-0 flex h-6 items-center pe-4 text-[10px] uppercase data-today:font-medium sm:pe-4 sm:text-xs"
                 data-today={isToday(day) || undefined}
               >
-                {format(day, "d MMM, EEEE")}
+                {format(day, "d MMM, EEEE", { locale: dateFnLocale })}
               </span>
               <div className="mt-6 space-y-2">
                 {dayEvents.map((event) => (

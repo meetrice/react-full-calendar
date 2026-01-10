@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/auth"
+import { useT } from "@/i18n"
 import { toast } from "sonner"
 import { Loader2, User, Mail, Phone, Building2, ArrowLeft, Camera, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -13,11 +14,13 @@ import type { LanguageCode } from "@/auth/lib/models"
 import { getInitials } from "@/lib/helpers"
 
 export function AccountPage() {
-  const { user, updateProfile } = useAuth()
+  const { user, updateProfile, getUser, setUser } = useAuth()
+  const { t } = useT()
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Form state
   const [username, setUsername] = useState(user?.username || '')
@@ -31,8 +34,21 @@ export function AccountPage() {
   const [language, setLanguage] = useState<LanguageCode>(user?.language || 'en')
   const [pic, setPic] = useState(user?.pic || '')
 
+  // Refresh user data from Supabase on mount
   useEffect(() => {
-    if (user) {
+    const refreshUser = async () => {
+      setIsRefreshing(true)
+      const freshUser = await getUser(true)
+      if (freshUser) {
+        setUser(freshUser)
+      }
+      setIsRefreshing(false)
+    }
+    refreshUser()
+  }, [])
+
+  useEffect(() => {
+    if (user && !isRefreshing) {
       setUsername(user.username || '')
       setFirstName(user.first_name || '')
       setLastName(user.last_name || '')
@@ -44,7 +60,7 @@ export function AccountPage() {
       setLanguage(user.language || 'en')
       setPic(user.pic || '')
     }
-  }, [user])
+  }, [user, isRefreshing])
 
   const handleSave = async () => {
     if (!user) return
@@ -65,9 +81,9 @@ export function AccountPage() {
         pic,
       })
 
-      toast.success("Account updated successfully")
+      toast.success(t('account.updated'))
     } catch (error) {
-      toast.error("Failed to update account. Please try again.")
+      toast.error(t('account.updateFailed'))
     } finally {
       setIsLoading(false)
     }
@@ -83,13 +99,13 @@ export function AccountPage() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file')
+      toast.error(t('account.profilePhoto.error'))
       return
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size must be less than 5MB')
+      toast.error(t('account.profilePhoto.sizeError'))
       return
     }
 
@@ -100,22 +116,22 @@ export function AccountPage() {
       reader.onloadend = () => {
         setPic(reader.result as string)
         setIsUploading(false)
-        toast.success('Photo updated successfully')
+        toast.success(t('account.profilePhoto.success'))
       }
       reader.onerror = () => {
         setIsUploading(false)
-        toast.error('Failed to upload image')
+        toast.error(t('account.profilePhoto.uploadFailed'))
       }
       reader.readAsDataURL(file)
     } catch (error) {
       setIsUploading(false)
-      toast.error('Failed to upload image')
+      toast.error(t('account.profilePhoto.uploadFailed'))
     }
   }
 
   const handleRemovePhoto = () => {
     setPic('')
-    toast.success('Photo removed')
+    toast.success(t('account.profilePhoto.removed'))
   }
 
   const languages = [
@@ -144,23 +160,23 @@ export function AccountPage() {
           ) : (
             <Save className="h-4 w-4" />
           )}
-          Save Changes
+          {t('common.saveChanges')}
         </Button>
       </div>
 
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Account Settings</h1>
+        <h1 className="text-2xl font-bold text-foreground">{t('account.title')}</h1>
         <p className="text-muted-foreground mt-1">
-          Manage your personal information and preferences
+          {t('account.description')}
         </p>
       </div>
 
       {/* Profile Photo Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Profile Photo</CardTitle>
+          <CardTitle>{t('account.profilePhoto.title')}</CardTitle>
           <CardDescription>
-            Update your profile picture
+            {t('account.profilePhoto.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -190,7 +206,7 @@ export function AccountPage() {
                 ) : (
                   <Camera className="h-4 w-4" />
                 )}
-                {pic ? 'Change Photo' : 'Upload Photo'}
+                {pic ? t('account.profilePhoto.change') : t('account.profilePhoto.upload')}
               </Button>
               {pic && (
                 <Button
@@ -198,7 +214,7 @@ export function AccountPage() {
                   onClick={handleRemovePhoto}
                   disabled={isUploading}
                 >
-                  Remove
+                  {t('account.profilePhoto.remove')}
                 </Button>
               )}
             </div>
@@ -211,26 +227,26 @@ export function AccountPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            Basic Information
+            {t('account.basicInfo.title')}
           </CardTitle>
           <CardDescription>
-            Update your personal details
+            {t('account.basicInfo.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">{t('account.basicInfo.username')}</Label>
               <Input
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username"
+                placeholder={t('account.placeholders.username')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('account.basicInfo.email')}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -238,39 +254,39 @@ export function AccountPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
+                  placeholder={t('account.placeholders.email')}
                   className="pl-9"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">{t('account.basicInfo.firstName')}</Label>
               <Input
                 id="firstName"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="John"
+                placeholder={t('account.placeholders.firstName')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">{t('account.basicInfo.lastName')}</Label>
               <Input
                 id="lastName"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                placeholder="Doe"
+                placeholder={t('account.placeholders.lastName')}
               />
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="fullName">Full Name</Label>
+              <Label htmlFor="fullName">{t('account.basicInfo.fullName')}</Label>
               <Input
                 id="fullName"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="John Doe"
+                placeholder={t('account.placeholders.fullName')}
               />
             </div>
           </div>
@@ -282,15 +298,15 @@ export function AccountPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
-            Contact Information
+            {t('account.contactInfo.title')}
           </CardTitle>
           <CardDescription>
-            Your contact details
+            {t('account.contactInfo.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
+            <Label htmlFor="phone">{t('account.contactInfo.phone')}</Label>
             <div className="relative">
               <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -298,7 +314,7 @@ export function AccountPage() {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1 234 567 8900"
+                placeholder={t('account.placeholders.phone')}
                 className="pl-9"
               />
             </div>
@@ -311,31 +327,31 @@ export function AccountPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Work Information
+            {t('account.workInfo.title')}
           </CardTitle>
           <CardDescription>
-            Your professional details
+            {t('account.workInfo.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="occupation">Occupation</Label>
+              <Label htmlFor="occupation">{t('account.workInfo.occupation')}</Label>
               <Input
                 id="occupation"
                 value={occupation}
                 onChange={(e) => setOccupation(e.target.value)}
-                placeholder="Software Engineer"
+                placeholder={t('account.placeholders.occupation')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="companyName">Company Name</Label>
+              <Label htmlFor="companyName">{t('account.workInfo.company')}</Label>
               <Input
                 id="companyName"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Acme Inc."
+                placeholder={t('account.placeholders.company')}
               />
             </div>
           </div>
@@ -345,17 +361,17 @@ export function AccountPage() {
       {/* Preferences */}
       <Card>
         <CardHeader>
-          <CardTitle>Preferences</CardTitle>
+          <CardTitle>{t('account.preferences.title')}</CardTitle>
           <CardDescription>
-            Customize your experience
+            {t('account.preferences.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="language">Language</Label>
+            <Label htmlFor="language">{t('account.preferences.language')}</Label>
             <Select value={language} onValueChange={(value) => setLanguage(value as LanguageCode)}>
               <SelectTrigger id="language">
-                <SelectValue placeholder="Select language" />
+                <SelectValue placeholder={t('account.preferences.selectLanguage')} />
               </SelectTrigger>
               <SelectContent>
                 {languages.map((lang) => (

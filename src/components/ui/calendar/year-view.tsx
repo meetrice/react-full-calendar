@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react"
 import {
+  addDays,
   eachMonthOfInterval,
   endOfMonth,
   format,
@@ -10,10 +11,13 @@ import {
   isSameMonth,
   isToday,
   startOfMonth,
+  startOfWeek,
 } from "date-fns"
+import { zhCN, enUS } from "date-fns/locale"
 import type { CalendarEvent } from "./types"
 import { DefaultStartHour } from "./constants"
 import { getEventsForDay } from "./utils"
+import { useT } from "@/i18n"
 
 interface YearViewProps {
   currentDate: Date
@@ -23,6 +27,8 @@ interface YearViewProps {
 }
 
 export function YearView({ currentDate, events, onEventSelect, onEventCreate }: YearViewProps) {
+  const { lang } = useT()
+  const dateFnLocale = lang === 'zh' ? zhCN : enUS
   const year = currentDate.getFullYear()
 
   // Get all months for the current year
@@ -34,8 +40,11 @@ export function YearView({ currentDate, events, onEventSelect, onEventCreate }: 
 
   // Get weekdays for header
   const weekdays = useMemo(() => {
-    return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-  }, [])
+    return Array.from({ length: 7 }).map((_, i) => {
+      const date = addDays(startOfWeek(new Date()), i)
+      return format(date, "EEE", { locale: dateFnLocale })
+    })
+  }, [dateFnLocale])
 
   // Generate calendar grid for a month
   const generateMonthGrid = (monthDate: Date) => {
@@ -88,7 +97,7 @@ export function YearView({ currentDate, events, onEventSelect, onEventCreate }: 
               {/* Month header */}
               <div className="border-border/70 border-b px-3 py-2">
                 <h3 className="text-sm font-semibold">
-                  {format(month, "MMMM")}
+                  {format(month, "MMMM", { locale: dateFnLocale })}
                 </h3>
               </div>
 

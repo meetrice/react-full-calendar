@@ -13,6 +13,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns"
+import { zhCN, enUS } from "date-fns/locale"
 
 import {
   Popover,
@@ -31,6 +32,7 @@ import {
   sortEvents,
 } from "./utils"
 import { useEventVisibility } from "./hooks/use-event-visibility"
+import { useT } from "@/i18n"
 
 interface MonthViewProps {
   currentDate: Date
@@ -45,6 +47,8 @@ export function MonthView({
   onEventSelect,
   onEventCreate,
 }: MonthViewProps) {
+  const { lang } = useT()
+  const dateFnLocale = lang === 'zh' ? zhCN : enUS
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentDate)
     const monthEnd = endOfMonth(monthStart)
@@ -57,9 +61,9 @@ export function MonthView({
   const weekdays = useMemo(() => {
     return Array.from({ length: 7 }).map((_, i) => {
       const date = addDays(startOfWeek(new Date()), i)
-      return format(date, "EEE")
+      return format(date, "EEE", { locale: dateFnLocale })
     })
-  }, [])
+  }, [dateFnLocale])
 
   const weeks = useMemo(() => {
     const result = []

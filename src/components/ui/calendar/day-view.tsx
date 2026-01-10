@@ -12,6 +12,7 @@ import {
   isSameDay,
   startOfDay,
 } from "date-fns"
+import { zhCN, enUS } from "date-fns/locale"
 
 import { cn } from "@/lib/utils"
 import type { CalendarEvent } from "./types"
@@ -21,6 +22,7 @@ import { EventItem } from "./event-item"
 import { isMultiDayEvent } from "./utils"
 import { useCurrentTimeIndicator } from "./hooks/use-current-time-indicator"
 import { EndHour, StartHour, WeekCellsHeight } from "./constants"
+import { useT } from "@/i18n"
 
 interface DayViewProps {
   currentDate: Date
@@ -44,6 +46,9 @@ export function DayView({
   onEventSelect,
   onEventCreate,
 }: DayViewProps) {
+  const { lang } = useT()
+  const dateFnLocale = lang === 'zh' ? zhCN : enUS
+
   const hours = useMemo(() => {
     const dayStart = startOfDay(currentDate)
     return eachHourOfInterval({
@@ -227,7 +232,7 @@ export function DayView({
             >
               {index > 0 && (
                 <span className="bg-background text-muted-foreground/70 absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end pe-2 text-[10px] sm:pe-4 sm:text-xs">
-                  {format(hour, "h a")}
+                  {format(hour, "h a", { locale: dateFnLocale })}
                 </span>
               )}
             </div>

@@ -23,7 +23,7 @@ export const AuthContext = createContext<{
     password_confirmation: string,
   ) => Promise<void>;
   resendVerificationEmail: (email: string) => Promise<void>;
-  getUser: () => Promise<UserModel | null>;
+  getUser: (forceRefresh?: boolean) => Promise<UserModel | null>;
   updateProfile: (userData: Partial<UserModel>) => Promise<UserModel>;
   logout: () => void;
   verify: () => Promise<void>;

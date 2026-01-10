@@ -17,6 +17,7 @@ import {
   startOfDay,
   startOfWeek,
 } from "date-fns"
+import { zhCN, enUS } from "date-fns/locale"
 
 import { cn } from "@/lib/utils"
 import type { CalendarEvent } from "./types"
@@ -26,6 +27,7 @@ import { DroppableCell } from "./droppable-cell"
 import { EventItem } from "./event-item"
 import { isMultiDayEvent } from "./utils"
 import { useCurrentTimeIndicator } from "./hooks/use-current-time-indicator"
+import { useT } from "@/i18n"
 
 interface WeekViewProps {
   currentDate: Date
@@ -49,6 +51,9 @@ export function WeekView({
   onEventSelect,
   onEventCreate,
 }: WeekViewProps) {
+  const { lang } = useT()
+  const dateFnLocale = lang === 'zh' ? zhCN : enUS
+
   const days = useMemo(() => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 })
     const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 })
@@ -225,9 +230,9 @@ export function WeekView({
             data-today={isToday(day) || undefined}
           >
             <span className="sm:hidden" aria-hidden="true">
-              {format(day, "E")[0]} {format(day, "d")}
+              {format(day, "E", { locale: dateFnLocale })[0]} {format(day, "d")}
             </span>
-            <span className="max-sm:hidden">{format(day, "EEE dd")}</span>
+            <span className="max-sm:hidden">{format(day, "EEE dd", { locale: dateFnLocale })}</span>
           </div>
         ))}
       </div>
@@ -306,7 +311,7 @@ export function WeekView({
             >
               {index > 0 && (
                 <span className="bg-background text-muted-foreground/70 absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end pe-2 text-[10px] sm:pe-4 sm:text-xs">
-                  {format(hour, "h a")}
+                  {format(hour, "h a", { locale: dateFnLocale })}
                 </span>
               )}
             </div>
