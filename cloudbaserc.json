@@ -1,4 +1,5 @@
 {
+  "envId": "meetrice-3g1up4om80115b9a",
   "hosting": {
     "public": "dist",
     "rewrites": [
