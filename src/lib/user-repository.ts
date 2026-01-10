@@ -127,8 +127,16 @@ export async function updateUserProfile(
     throw new Error('Failed to update user: no data returned')
   }
 
-  // Convert auth user metadata back to UserModel
-  const userMetadata = authData.user_metadata || metadata
+  // Debug log - check the API response structure
+  console.log('Update user API response:', authData)
+
+  // Supabase Admin API returns: { id, email, user_metadata, ... }
+  // The user_metadata in the response should contain what we just saved
+  const responseMetadata = authData.user_metadata || authData.user?.user_metadata || {}
+
+  // Merge the metadata we sent with the response (in case response is incomplete)
+  const userMetadata = { ...metadata, ...responseMetadata }
+
   const updatedUser: UserModel = {
     id: authData.id || userId,
     email: authData.email || userData.email || '',
@@ -146,6 +154,8 @@ export async function updateUserProfile(
     is_admin: (userMetadata.is_admin as boolean) || undefined,
     email_verified: authData.email_confirmed_at !== null || userData.email_verified,
   }
+
+  console.log('Final updated user:', updatedUser)
 
   return updatedUser
 }

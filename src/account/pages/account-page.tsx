@@ -4,6 +4,7 @@ import { useAuth } from "@/auth"
 import { useT } from "@/i18n"
 import { toast } from "sonner"
 import { Loader2, User, Mail, Phone, Building2, ArrowLeft, Camera, Save } from "lucide-react"
+import { uploadAvatar } from "@/lib/supabase-storage"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -96,6 +97,10 @@ export function AccountPage() {
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    if (!user?.id) {
+      toast.error(t('account.profilePhoto.uploadFailed'))
+      return
+    }
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -111,20 +116,39 @@ export function AccountPage() {
 
     setIsUploading(true)
     try {
-      // Convert to base64 for storage (in production, upload to server/storage service)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPic(reader.result as string)
+      // Upload to Supabase Storage
+      const result = await uploadAvatar(file, user.id)
+
+      if (result.error) {
+        toast.error(result.error)
         setIsUploading(false)
-        toast.success(t('account.profilePhoto.success'))
+        return
       }
-      reader.onerror = () => {
-        setIsUploading(false)
-        toast.error(t('account.profilePhoto.uploadFailed'))
+
+      // Add cache busting parameter to URL
+      const urlWithCache = `${result.url}?t=${Date.now()}`
+
+      // Update local state first for immediate feedback
+      setPic(urlWithCache)
+
+      // Save only the pic field to user profile
+      // updateProfile will update auth.users.user_metadata and global user state
+      await updateProfile({
+        ...user,
+        pic: urlWithCache,
+      })
+
+      // Force refresh user from Supabase to ensure we have the latest data
+      const freshUser = await getUser(true)
+      if (freshUser) {
+        setUser(freshUser)
       }
-      reader.readAsDataURL(file)
+
+      setIsUploading(false)
+      toast.success(t('account.profilePhoto.success'))
     } catch (error) {
       setIsUploading(false)
+      console.error('Upload error:', error)
       toast.error(t('account.profilePhoto.uploadFailed'))
     }
   }
