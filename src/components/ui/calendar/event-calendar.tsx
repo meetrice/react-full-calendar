@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react"
 import { RiCalendarCheckLine } from "@remixicon/react"
 import {
   addDays,
-  addHours,
   addMonths,
   addWeeks,
   addYears,
@@ -43,6 +42,7 @@ import { MonthView } from "./month-view"
 import { WeekView } from "./week-view"
 import { YearView } from "./year-view"
 import { ToolbarSidebarToggle } from "@/calendar/layout/components/toolbar"
+import { useCalendarData } from "@/calendar/context/calendar-data-context"
 
 export interface EventCalendarProps {
   events?: CalendarEvent[]
@@ -63,8 +63,15 @@ export function EventCalendar({
 }: EventCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<CalendarView>(initialView)
-  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false)
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+
+  // Use context for dialog state to share with sidebar
+  const {
+    selectedEvent,
+    setSelectedEvent,
+    isEventDialogOpen,
+    setIsEventDialogOpen,
+    openNewEventDialog,
+  } = useCalendarData()
 
   // Add keyboard shortcuts for view switching
   useEffect(() => {
@@ -161,15 +168,8 @@ export function EventCalendar({
       startTime.setMilliseconds(0)
     }
 
-    const newEvent: CalendarEvent = {
-      id: "",
-      title: "",
-      start: startTime,
-      end: addHours(startTime, 1),
-      allDay: false,
-    }
-    setSelectedEvent(newEvent)
-    setIsEventDialogOpen(true)
+    // Use the context's openNewEventDialog function
+    openNewEventDialog(startTime)
   }
 
   const handleEventSave = (event: CalendarEvent) => {
@@ -356,23 +356,7 @@ export function EventCalendar({
             <Button
               className="max-[479px]:aspect-square max-[479px]:p-0!"
               variant="mono"
-              onClick={() => {
-                // Create a new event starting at the current date/time
-                const now = new Date()
-                // Round to next hour
-                now.setMinutes(0, 0, 0)
-                now.setHours(now.getHours() + 1)
-                
-                const newEvent: CalendarEvent = {
-                  id: "",
-                  title: "",
-                  start: now,
-                  end: addHours(now, 1),
-                  allDay: false,
-                }
-                setSelectedEvent(newEvent)
-                setIsEventDialogOpen(true)
-              }}
+              onClick={() => openNewEventDialog()}
             >
               <PlusIcon
                 className="opacity-60 sm:-ms-1"

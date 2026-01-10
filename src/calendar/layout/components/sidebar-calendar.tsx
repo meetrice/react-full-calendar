@@ -21,7 +21,7 @@ const colorClasses: Record<EventColor, string> = {
 }
 
 export default function SidebarCalendar() {
-  const { selectedDate, events, setSelectedDate } = useCalendarData()
+  const { selectedDate, events, setSelectedDate, openEventDialog, openNewEventDialog } = useCalendarData()
 
   // Filter events for the selected date
   const dayEvents = React.useMemo(() => {
@@ -48,8 +48,14 @@ export default function SidebarCalendar() {
   }, [dayEvents])
 
   const handleEventClick = (event: typeof sortedEvents[0]) => {
-    // TODO: Open event dialog for editing
-    console.log("Edit event:", event)
+    openEventDialog(event)
+  }
+
+  const handleAddEvent = () => {
+    // Start the new event at the beginning of the selected date (9 AM)
+    const startTime = new Date(selectedDate)
+    startTime.setHours(9, 0, 0, 0)
+    openNewEventDialog(startTime)
   }
 
   return (
@@ -77,10 +83,7 @@ export default function SidebarCalendar() {
             size="icon"
             className="size-6"
             title="Add Event"
-            onClick={() => {
-              // TODO: Open event dialog for creating new event
-              console.log("Add event for:", selectedDate)
-            }}
+            onClick={handleAddEvent}
           >
             <PlusIcon />
             <span className="sr-only">Add Event</span>
