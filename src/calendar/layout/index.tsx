@@ -1,8 +1,17 @@
 import { Helmet } from 'react-helmet-async';
 import { Wrapper } from './components/wrapper';
-import { LayoutProvider } from './components/context';  
+import { LayoutProvider } from './components/context';
+import { CalendarDataProvider } from '../context/calendar-data-context';
+import type { CalendarEvent } from '@/components/ui/calendar/types';
+import type { ReactNode } from 'react';
 
-export function DefaultLayout() {
+export interface DefaultLayoutProps {
+  events?: CalendarEvent[]
+  children?: ReactNode
+  calendarContent?: ReactNode
+}
+
+export function DefaultLayout({ events = [], children, calendarContent }: DefaultLayoutProps) {
 
   return (
     <>
@@ -10,15 +19,19 @@ export function DefaultLayout() {
         <title>Calendar</title>
       </Helmet>
 
-      <LayoutProvider
-        bodyClassName="bg-zinc-950 lg:overflow-hidden"
-        style={{
-          '--sidebar-width': '260px',
-          '--header-height-mobile': '60px',
-        } as React.CSSProperties}
-      > 
-        <Wrapper /> 
-      </LayoutProvider>
+      <CalendarDataProvider events={events}>
+        <LayoutProvider
+          bodyClassName="bg-zinc-950 lg:overflow-hidden"
+          style={{
+            '--sidebar-width': '260px',
+            '--header-height-mobile': '60px',
+          } as React.CSSProperties}
+        >
+          <Wrapper>
+            {calendarContent || children}
+          </Wrapper>
+        </LayoutProvider>
+      </CalendarDataProvider>
     </>
   );
 }

@@ -1,11 +1,15 @@
-import { Outlet } from 'react-router-dom';
+import { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { useLayout } from './context';
 import { Sidebar } from './sidebar';
 import { HeaderMobile } from './header-mobile';
 import { cn } from '@/lib/utils';
 
-export function Wrapper() {
+export interface WrapperProps {
+  children?: ReactNode
+}
+
+export function Wrapper({ children }: WrapperProps) {
   const {isMobile} = useLayout();
   const [enableTransitions, setEnableTransitions] = useState(false);
 
@@ -23,11 +27,11 @@ export function Wrapper() {
           {!isMobile && <Sidebar />}
 
           <div className={cn(
-            'grow lg:overflow-y-auto lg:ms-(--sidebar-width) lg:in-data-[sidebar-open=false]:ms-2.5 mx-2 bg-background border border-input rounded-xl shadow-xs', 
-            enableTransitions ? 'lg:transition-[margin] lg:duration-300' : 'lg:transition-none', 
+            'grow lg:overflow-y-auto lg:ms-(--sidebar-width) lg:in-data-[sidebar-open=false]:ms-2.5 mx-2 bg-background border border-input rounded-xl shadow-xs',
+            enableTransitions ? 'lg:transition-[margin] lg:duration-300' : 'lg:transition-none',
           )}>
-            <main className="grow" role="content">
-              <Outlet />
+            <main className="min-h-0 flex flex-col" role="content">
+              {children}
             </main>
           </div>
         </div>
