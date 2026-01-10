@@ -39,6 +39,7 @@ interface MonthViewProps {
   events: CalendarEvent[]
   onEventSelect: (event: CalendarEvent) => void
   onEventCreate: (startTime: Date) => void
+  weekStartsOn?: number
 }
 
 export function MonthView({
@@ -46,24 +47,29 @@ export function MonthView({
   events,
   onEventSelect,
   onEventCreate,
+  weekStartsOn = 0,
 }: MonthViewProps) {
   const { lang } = useT()
   const dateFnLocale = lang === 'zh' ? zhCN : enUS
+
+  // Type assertion for weekStartsOn option
+  const weekStartOption = { weekStartsOn } as { weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 }
+
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentDate)
     const monthEnd = endOfMonth(monthStart)
-    const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 })
-    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 })
+    const calendarStart = startOfWeek(monthStart, weekStartOption)
+    const calendarEnd = endOfWeek(monthEnd, weekStartOption)
 
     return eachDayOfInterval({ start: calendarStart, end: calendarEnd })
-  }, [currentDate])
+  }, [currentDate, weekStartsOn])
 
   const weekdays = useMemo(() => {
     return Array.from({ length: 7 }).map((_, i) => {
-      const date = addDays(startOfWeek(new Date()), i)
+      const date = addDays(startOfWeek(new Date(), weekStartOption), i)
       return format(date, "EEE", { locale: dateFnLocale })
     })
-  }, [dateFnLocale])
+  }, [dateFnLocale, weekStartsOn])
 
   const weeks = useMemo(() => {
     const result = []

@@ -45,6 +45,7 @@ import { YearView } from "./year-view"
 import { ToolbarSidebarToggle } from "@/calendar/layout/components/toolbar"
 import { useCalendarData } from "@/calendar/context/calendar-data-context"
 import { useT } from "@/i18n"
+import { useAuth } from "@/auth"
 
 export interface EventCalendarProps {
   events?: CalendarEvent[]
@@ -64,10 +65,16 @@ export function EventCalendar({
   initialView = "month",
 }: EventCalendarProps) {
   const { t, lang } = useT()
+  const { user } = useAuth()
   // Map language code to date-fns locale
   const dateFnLocale = lang === 'zh' ? zhCN : enUS
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<CalendarView>(initialView)
+
+  // Get week start setting from user preferences (default to sunday = 0)
+  const weekStartsOn = useMemo(() => {
+    return user?.week_start === 'monday' ? 1 : 0
+  }, [user?.week_start])
 
   // Use context for dialog state to share with sidebar
   const {
@@ -235,8 +242,8 @@ export function EventCalendar({
     if (view === "month") {
       return format(currentDate, yearMonthFormat, { locale: dateFnLocale })
     } else if (view === "week") {
-      const start = startOfWeek(currentDate, { weekStartsOn: 0 })
-      const end = endOfWeek(currentDate, { weekStartsOn: 0 })
+      const start = startOfWeek(currentDate, { weekStartsOn })
+      const end = endOfWeek(currentDate, { weekStartsOn })
       if (isSameMonth(start, end)) {
         return format(start, yearMonthFormat, { locale: dateFnLocale })
       } else {
@@ -271,7 +278,7 @@ export function EventCalendar({
     } else {
       return format(currentDate, yearMonthFormat, { locale: dateFnLocale })
     }
-  }, [currentDate, view, dateFnLocale, lang])
+  }, [currentDate, view, dateFnLocale, lang, weekStartsOn])
 
   return (
     <div
@@ -386,6 +393,7 @@ export function EventCalendar({
               events={events}
               onEventSelect={handleEventSelect}
               onEventCreate={handleEventCreate}
+              weekStartsOn={weekStartsOn}
             />
           )}
           {view === "week" && (
@@ -394,6 +402,7 @@ export function EventCalendar({
               events={events}
               onEventSelect={handleEventSelect}
               onEventCreate={handleEventCreate}
+              weekStartsOn={weekStartsOn}
             />
           )}
           {view === "day" && (
@@ -417,6 +426,7 @@ export function EventCalendar({
               events={events}
               onEventSelect={handleEventSelect}
               onEventCreate={handleEventCreate}
+              weekStartsOn={weekStartsOn}
             />
           )}
         </div>

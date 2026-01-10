@@ -24,9 +24,10 @@ interface YearViewProps {
   events: CalendarEvent[]
   onEventSelect: (event: CalendarEvent) => void
   onEventCreate: (startTime: Date) => void
+  weekStartsOn?: number
 }
 
-export function YearView({ currentDate, events, onEventSelect, onEventCreate }: YearViewProps) {
+export function YearView({ currentDate, events, onEventSelect, onEventCreate, weekStartsOn = 0 }: YearViewProps) {
   const { lang } = useT()
   const dateFnLocale = lang === 'zh' ? zhCN : enUS
   const year = currentDate.getFullYear()
@@ -41,22 +42,27 @@ export function YearView({ currentDate, events, onEventSelect, onEventCreate }: 
   // Get weekdays for header
   const weekdays = useMemo(() => {
     return Array.from({ length: 7 }).map((_, i) => {
-      const date = addDays(startOfWeek(new Date()), i)
+      const date = addDays(startOfWeek(new Date(), { weekStartsOn } as { weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 }), i)
       return format(date, "EEE", { locale: dateFnLocale })
     })
-  }, [dateFnLocale])
+  }, [dateFnLocale, weekStartsOn])
 
   // Generate calendar grid for a month
   const generateMonthGrid = (monthDate: Date) => {
     const firstDay = startOfMonth(monthDate)
     const lastDay = endOfMonth(monthDate)
     const daysInMonth = getDaysInMonth(monthDate)
-    const startDayOfWeek = firstDay.getDay()
+
+    // Calculate the offset based on weekStartsOn
+    const firstDayOfWeek = startOfWeek(firstDay, { weekStartsOn } as { weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 })
 
     const days: Array<Date | null> = []
 
+    // Calculate days from week start to first day of month
+    const daysFromWeekStart = Math.floor((firstDay.getTime() - firstDayOfWeek.getTime()) / (1000 * 60 * 60 * 24))
+
     // Add empty cells for days before the first day of the month
-    for (let i = 0; i < startDayOfWeek; i++) {
+    for (let i = 0; i < daysFromWeekStart; i++) {
       days.push(null)
     }
 

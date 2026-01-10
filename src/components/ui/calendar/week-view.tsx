@@ -34,6 +34,7 @@ interface WeekViewProps {
   events: CalendarEvent[]
   onEventSelect: (event: CalendarEvent) => void
   onEventCreate: (startTime: Date) => void
+  weekStartsOn?: number
 }
 
 interface PositionedEvent {
@@ -50,19 +51,23 @@ export function WeekView({
   events,
   onEventSelect,
   onEventCreate,
+  weekStartsOn = 0,
 }: WeekViewProps) {
   const { lang } = useT()
   const dateFnLocale = lang === 'zh' ? zhCN : enUS
 
+  // Type assertion for weekStartsOn option
+  const weekStartOption = { weekStartsOn } as { weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 }
+
   const days = useMemo(() => {
-    const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 })
-    const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 })
+    const weekStart = startOfWeek(currentDate, weekStartOption)
+    const weekEnd = endOfWeek(currentDate, weekStartOption)
     return eachDayOfInterval({ start: weekStart, end: weekEnd })
-  }, [currentDate])
+  }, [currentDate, weekStartsOn])
 
   const weekStart = useMemo(
-    () => startOfWeek(currentDate, { weekStartsOn: 0 }),
-    [currentDate]
+    () => startOfWeek(currentDate, weekStartOption),
+    [currentDate, weekStartsOn]
   )
 
   const hours = useMemo(() => {
