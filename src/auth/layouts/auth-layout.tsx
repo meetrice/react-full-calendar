@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export function AuthLayout() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gray-200 p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold">Welcome Back</h1>
