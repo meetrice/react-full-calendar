@@ -73,6 +73,13 @@ export function SignInPage() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="block w-full space-y-5"
       >
+        <div className="text-center mb-4">
+          <h3 className="text-2xl font-bold text-gray-900">Sign In</h3>
+          <p className="text-sm text-gray-600 mt-1">
+            Enter your credentials to access your account
+          </p>
+        </div>
+
         {error && (
           <div className="flex items-center gap-2 p-3 text-sm text-destructive bg-destructive/10 rounded-md">
             <AlertCircle className="h-4 w-4" />
